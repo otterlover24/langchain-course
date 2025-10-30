@@ -115,6 +115,7 @@ Thought: {agent_scratchpad}
         input={"input": "What is the length of the word DOG?"},
         agent_scratchpad=intermediate_steps,
     )
+    print(type(agent_step))
     print(agent_step)
 
     if isinstance(agent_step, AgentAction):
@@ -134,4 +135,5 @@ Thought: {agent_scratchpad}
         input={"input": "What is the length of the word DOG?"},
         agent_scratchpad=intermediate_steps,
     )
+    print(type(agent_step))
     print(agent_step)
