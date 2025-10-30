@@ -8,6 +8,8 @@ from langchain_core.output_parsers import BaseOutputParser
 from typing import Union, List
 import re
 
+from callbacks import AgentCallbackHandler
+
 
 def format_log_to_str(intermediate_steps: List[tuple]) -> str:
     """Format intermediate steps to string."""
@@ -95,7 +97,9 @@ Thought: {agent_scratchpad}
     )
 
     # llm = ChatOpenAI(temperature=0).bind(stop=["\nObservation:", "Observation:"])
-    llm = ChatOpenAI(temperature=0)
+    llm = ChatOpenAI(temperature=0, callbacks=[AgentCallbackHandler()]).bind(
+        stop=["\nObservation:", "Observation:"]
+    )
 
     intermediate_steps = []
 
@@ -111,29 +115,27 @@ Thought: {agent_scratchpad}
         | ReActSingleInputOutputParser()
     )
 
-    agent_step: Union[AgentAction, AgentFinish] = agent.invoke(
-        input={"input": "What is the length of the word DOG?"},
-        agent_scratchpad=intermediate_steps,
-    )
-    print(type(agent_step))
-    print(agent_step)
+    agent_step = ""
+    while not isinstance(agent_step, AgentFinish):
+        agent_step: Union[AgentAction, AgentFinish] = agent.invoke(
+            input={"input": "What is the length of the word DOG?"},
+            agent_scratchpad=intermediate_steps,
+        )
+        print(type(agent_step))
+        print(agent_step)
 
-    if isinstance(agent_step, AgentAction):
-        tool_name = agent_step.tool
-        tool_to_use = find_tool_by_name(tools, tool_name)
-        tool_input = agent_step.tool_input
+        if isinstance(agent_step, AgentAction):
+            tool_name = agent_step.tool
+            tool_to_use = find_tool_by_name(tools, tool_name)
+            tool_input = agent_step.tool_input
 
-        observation = tool_to_use.invoke(tool_input)
-        print(f"Observation: {observation}")
-        intermediate_steps.append((agent_step, observation))
+            observation = tool_to_use.invoke(tool_input)
+            print(f"Observation: {observation}")
+            intermediate_steps.append((agent_step, observation))
 
-    print(
-        f"Agent scratchpad so far:\n{format_log_to_str(intermediate_steps)}\n END OF SCRATCHPAD"
-    )
+        print(
+            f"Agent scratchpad so far:\n{format_log_to_str(intermediate_steps)}\n END OF SCRATCHPAD"
+        )
 
-    agent_step: Union[AgentAction, AgentFinish] = agent.invoke(
-        input={"input": "What is the length of the word DOG?"},
-        agent_scratchpad=intermediate_steps,
-    )
-    print(type(agent_step))
-    print(agent_step)
+    if isinstance(agent_step, AgentFinish):
+        print(f"{agent_step.return_values=}")
