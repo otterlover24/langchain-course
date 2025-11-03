@@ -1,0 +1,12 @@
+black==25.1.0
+isort==6.0.1
+langchain==0.3.27
+langchain-experimental==0.3.4
+langchain-openai==0.3.32
+langchainhub
+pillow==11.3.0
+python-dotenv==1.1.1
+qr==0.6.0
+qrcode==8.2
+pandas
+tabulate
